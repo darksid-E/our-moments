@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Moments</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════ PIN MODAL ═══════════════════════════════ -->
+<div id="pin-modal" class="modal-overlay hidden">
+  <div class="pin-card">
+    <button class="modal-close" onclick="closePin()">✕</button>
+    <div class="pin-header">
+      <span class="pin-icon">🔐</span>
+      <h3>Acesso Restrito</h3>
+      <p>Digite o PIN para continuar</p>
+    </div>
+    <div class="pin-dots">
+      <span class="dot" id="d1"></span>
+      <span class="dot" id="d2"></span>
+      <span class="dot" id="d3"></span>
+      <span class="dot" id="d4"></span>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn pin-clear" onclick="pinClear()">⌫</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn pin-ok" onclick="pinSubmit()">→</button>
+    </div>
+    <p id="pin-error" class="pin-error hidden">PIN incorreto. Tente novamente.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PAGE: HOME ══════════════════════════════ -->
+<div id="page-home" class="page active">
+  <header class="home-header">
+    <div class="header-brand">
+      <span class="brand-symbol">◈</span>
+      <h1>Our Moments</h1>
+    </div>
+    <button class="btn-create" onclick="requestPin('create-album')">
+      <span>＋</span> Novo Álbum
+    </button>
+  </header>
+
+  <main class="home-main">
+    <div id="albums-empty" class="empty-state hidden">
+      <div class="empty-icon">◈</div>
+      <h2>Nenhum álbum ainda</h2>
+      <p>Crie seu primeiro álbum e preserve seus momentos especiais.</p>
+    </div>
+    <div id="albums-grid" class="albums-grid"></div>
+  </main>
+</div>
+
+<!-- ════════════════════════════ PAGE: ALBUM VIEW ════════════════════════════ -->
+<div id="page-album" class="page">
+  <div id="album-bg" class="album-bg">
+    <header class="album-header">
+      <button class="btn-back" onclick="goHome()">← Voltar</button>
+      <div class="album-title-wrap">
+        <h2 id="album-name-display"></h2>
+        <p id="album-desc-display"></p>
+      </div>
+      <button class="btn-edit-subtle" onclick="requestPin('edit-album')">✎</button>
+    </header>
+
+    <div class="carousel-container">
+      <div id="polaroid-carousel" class="polaroid-carousel"></div>
+      <div class="carousel-controls">
+        <button class="carousel-arrow left" onclick="rotateCarousel(-1)">‹</button>
+        <div id="carousel-counter" class="carousel-counter">1 / 1</div>
+        <button class="carousel-arrow right" onclick="rotateCarousel(1)">›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PAGE: CREATE / EDIT ══════════════════════════ -->
+<div id="page-editor" class="page">
+  <header class="editor-header">
+    <button class="btn-back" onclick="cancelEditor()">← Cancelar</button>
+    <h2 id="editor-title">Novo Álbum</h2>
+    <button class="btn-save-album" onclick="saveAlbum()">Salvar Álbum</button>
+  </header>
+
+  <div class="editor-body">
+
+    <!-- LEFT: Album meta -->
+    <section class="editor-meta">
+      <div class="field-group">
+        <label>Nome do Álbum</label>
+        <input type="text" id="input-album-name" placeholder="Ex: Viagem para Paris…" maxlength="40" />
+      </div>
+      <div class="field-group">
+        <label>Descrição</label>
+        <textarea id="input-album-desc" placeholder="Uma história em imagens…" rows="3" maxlength="200"></textarea>
+      </div>
+      <div class="field-group">
+        <label>Paleta do Álbum</label>
+        <div class="palette-grid" id="palette-grid"></div>
+      </div>
+      <div class="field-group">
+        <label>Capa do Álbum</label>
+        <div class="cover-preview" id="cover-preview">
+          <span>Selecione uma foto como capa</span>
+        </div>
+        <label class="btn-change-cover">
+          📁 Usar outra foto como capa
+          <input type="file" id="cover-file-input" accept="image/*" onchange="handleCustomCover(event)" />
+        </label>
+      </div>
+    </section>
+
+    <!-- RIGHT: Photos -->
+    <section class="editor-photos">
+      <div class="photos-toolbar">
+        <h3>Fotos <span id="photo-count">(0)</span></h3>
+        <label class="btn-add-photo">
+          <span>＋ Adicionar Fotos</span>
+          <input type="file" id="file-input" accept="image/*" multiple onchange="handlePhotoAdd(event)" />
+        </label>
+      </div>
+      <div id="photo-list" class="photo-list"></div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════ PHOTO EDITOR MODAL ════════════════════════════ -->
+<div id="photo-editor-modal" class="modal-overlay hidden">
+  <div class="photo-editor-card">
+    <div class="photo-editor-header">
+      <h3>Editar Foto</h3>
+      <button class="modal-close" onclick="closePhotoEditor()">✕</button>
+    </div>
+    <div class="photo-editor-body">
+      <div class="photo-editor-canvas-wrap">
+        <div id="polaroid-preview" class="polaroid-preview">
+          <div class="polaroid-inner">
+            <div class="photo-crop-area" id="crop-area">
+              <img id="edit-photo-img" src="" alt="" draggable="false" />
+            </div>
+            <div class="polaroid-caption-area">
+              <p id="polaroid-caption-preview">Legenda aqui</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="photo-editor-controls">
+
+        <div class="ctrl-section">
+          <label>Legenda da Foto</label>
+          <input type="text" id="input-photo-caption" placeholder="Momento especial…" maxlength="60" oninput="updateCaption()" />
+        </div>
+
+        <div class="ctrl-section">
+          <label>Cor da Moldura</label>
+          <div class="frame-colors" id="frame-colors"></div>
+        </div>
+
+        <div class="ctrl-section">
+          <label>Zoom <span id="zoom-val">100%</span></label>
+          <input type="range" id="zoom-slider" min="1" max="300" value="100" oninput="applyTransform()" />
+        </div>
+
+        <div class="ctrl-section">
+          <label>Posição X <span id="x-val">0</span></label>
+          <input type="range" id="x-slider" min="-200" max="200" value="0" oninput="applyTransform()" />
+        </div>
+
+        <div class="ctrl-section">
+          <label>Posição Y <span id="y-val">0</span></label>
+          <input type="range" id="y-slider" min="-200" max="200" value="0" oninput="applyTransform()" />
+        </div>
+
+        <div class="ctrl-section">
+          <label>Rotação <span id="rot-val">0°</span></label>
+          <input type="range" id="rot-slider" min="-45" max="45" value="0" oninput="applyTransform()" />
+        </div>
+
+        <div class="ctrl-section">
+          <label>Brilho <span id="bright-val">100%</span></label>
+          <input type="range" id="bright-slider" min="30" max="200" value="100" oninput="applyFilters()" />
+        </div>
+
+        <div class="ctrl-section">
+          <label>Contraste <span id="contrast-val">100%</span></label>
+          <input type="range" id="contrast-slider" min="30" max="200" value="100" oninput="applyFilters()" />
+        </div>
+
+        <div class="ctrl-section">
+          <label>Saturação <span id="sat-val">100%</span></label>
+          <input type="range" id="sat-slider" min="0" max="300" value="100" oninput="applyFilters()" />
+        </div>
+
+        <div class="ctrl-section">
+          <label>Filtro</label>
+          <div class="filter-row" id="filter-row"></div>
+        </div>
+
+        <div class="ctrl-section">
+          <label>Ações</label>
+          <div class="action-btns">
+            <button onclick="mirrorPhoto()">↔ Espelhar</button>
+            <button onclick="resetPhotoEdits()">↺ Resetar</button>
+          </div>
+        </div>
+
+        <button class="btn-save-photo" onclick="savePhotoEdit()">✓ Salvar Foto</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/pin.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/album.js"></script>
+<script src="js/home.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
